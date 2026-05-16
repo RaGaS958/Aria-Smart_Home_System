@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────────
+#  ARIA — .dockerignore  (lives inside backend/)
+#  Context = backend/ folder, so all paths are relative to it
+# ─────────────────────────────────────────────────────────────────
+
+# ── Virtual Environment ───────────────────────
+Aria-backend/
+venv/
+.venv/
+env/
+ENV/
+
+# ── Python Cache ──────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ── Environment Variables ─────────────────────
+.env
+.env.local
+.env.*.local
+# .env.example is allowed through
+
+# ── Tests & Debug (not needed in prod image) ──
+test_*.py
+debug_*.py
+run_tests.py
+pytest.ini
+requirements-test.txt
+tests/
+htmlcov/
+.coverage
+.pytest_cache/
+report.json
+
+# ── IDE & OS ──────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Git ───────────────────────────────────────
+.git/
+.gitignore
+
+# ── Docker itself ─────────────────────────────
+Dockerfile
+.dockerignore
+
+# ── Logs & Cache ──────────────────────────────
+*.log
+logs/
+.cache/
+.mypy_cache/
+.ruff_cache/

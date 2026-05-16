@@ -1,0 +1,135 @@
+name: ARIA Backend · CI
+
+on:
+  push:
+    branches: [main, develop, "feature/**"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:          # manual trigger from GitHub UI
+
+# Cancel in-progress runs on the same branch (saves CI minutes)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+jobs:
+# ──────────────────────────────────────────────────────────────────────────────
+
+  test:
+    name: Test · Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false          # run all matrix legs even if one fails
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # ── Checkout ─────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python setup ─────────────────────────────────────────────────────
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      # ── Install runtime deps ──────────────────────────────────────────────
+      - name: Install runtime dependencies
+        run: pip install -r requirements.txt
+
+      # ── Install test/lint extras ──────────────────────────────────────────
+      - name: Install test dependencies
+        run: |
+          pip install \
+            pytest \
+            pytest-asyncio \
+            pytest-cov \
+            httpx \
+            anyio[trio]
+
+      # ── Lint ─────────────────────────────────────────────────────────────
+      - name: Lint with Ruff
+        run: |
+          pip install ruff
+          ruff check main.py tests/ --select E,W,F --ignore E501,W291,W293
+        continue-on-error: true   # lint warnings do NOT fail the build
+
+      # ── Type check ───────────────────────────────────────────────────────
+      - name: Type-check with mypy
+        run: |
+          pip install mypy types-requests
+          mypy main.py \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --warn-unused-ignores \
+            --follow-imports=silent
+        continue-on-error: true   # type errors are advisory only
+
+      # ── Env vars for tests (no real API calls) ────────────────────────────
+      - name: Write test .env
+        run: |
+          cat > .env <<'EOF'
+          OPENWEATHER_API_KEY=ci_fake_owm_key
+          TAVILY_API_KEY=ci_fake_tavily_key
+          MISTRAL_API_KEY=ci_fake_mistral_key
+          EOF
+
+      # ── Run tests ─────────────────────────────────────────────────────────
+      - name: Run test suite
+        run: |
+          pytest \
+            --cov=main \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-fail-under=70 \
+            -m "not integration" \
+            -v
+        env:
+          OPENWEATHER_API_KEY: ci_fake_owm_key
+          TAVILY_API_KEY:      ci_fake_tavily_key
+          MISTRAL_API_KEY:     ci_fake_mistral_key
+
+      # ── Upload coverage to Codecov (optional) ─────────────────────────────
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.12'
+        with:
+          file: backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
+        continue-on-error: true
+
+      # ── Archive HTML coverage report ──────────────────────────────────────
+      - name: Archive HTML coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html-py${{ matrix.python-version }}
+          path: backend/htmlcov/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Summary job — required status check for branch protection
+  # ──────────────────────────────────────────────────────────────────────────
+  ci-pass:
+    name: CI passed
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌  test job failed" && exit 1
+          fi
+          echo "✅  All checks passed"

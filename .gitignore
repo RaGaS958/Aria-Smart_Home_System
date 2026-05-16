@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────────
+#  ARIA — .gitignore  (project root)
+#  Covers: backend (FastAPI/Python) + frontend (React/Vite/TS)
+# ─────────────────────────────────────────────────────────────────
+
+# ════════════════════════════════════════════════
+#  PYTHON  (backend/)
+# ════════════════════════════════════════════════
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+MANIFEST
+
+# Virtual environments
+Aria-backend/
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# Testing & Coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.hypothesis/
+test-results/
+report.json
+
+# FastAPI / Uvicorn
+*.log
+logs/
+*.pid
+
+# ════════════════════════════════════════════════
+#  NODE / FRONTEND  (frontend/)
+# ════════════════════════════════════════════════
+
+node_modules/
+frontend/node_modules/
+
+# Vite build output
+frontend/dist/
+frontend/build/
+frontend/.vite/
+*.tsbuildinfo
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ════════════════════════════════════════════════
+#  ENVIRONMENT VARIABLES
+# ════════════════════════════════════════════════
+
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+# Keep examples tracked
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# ════════════════════════════════════════════════
+#  IDEs & EDITORS
+# ════════════════════════════════════════════════
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ════════════════════════════════════════════════
+#  OS FILES
+# ════════════════════════════════════════════════
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ════════════════════════════════════════════════
+#  MISC
+# ════════════════════════════════════════════════
+
+*.bak
+*.tmp
+*.orig
+.cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
