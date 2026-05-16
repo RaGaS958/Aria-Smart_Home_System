@@ -519,6 +519,11 @@ class ChatRequest(BaseModel):
     city: Optional[str] = ""   # user's detected city from frontend geolocation
 
 
+@app.get("/")
+def greet_json():
+    return {"Hello": "World!, Aria is here"}
+
+
 @app.get("/api/health")
 async def health():
     return {"status": "ARIA online", "version": "2.0.0", "time": datetime.now().isoformat()}
